@@ -1,7 +1,7 @@
 
 # TODO: reshaping / flattening tests, check updating of shape, g_shape, ndim, g_ndim
 # TODO: test all left_actions, not just composition in group
-
+# Add more groups
 
 def test_p4_array():
     from groupy.garray import p4_array
