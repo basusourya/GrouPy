@@ -64,16 +64,18 @@ class H2V2Group(FiniteGroup, H2V2Array):
 H2V2 = H2V22Group()
 
 # Generators & special elements
-m = H2V2Array(data=np.array([0, 1]), p='int')
+m1 = H2V2Array(data=np.array([0, 1]), p='int')
+m2 = H2V2Array(data=np.array([1, 0]), p='int')
 e = H2V2Array(data=np.array([0, 0]), p='int')
 
 
 def identity(shape=(), p='int'):
-    e = H2V2Array(np.zeros(shape + (1,), dtype=np.int), 'int')
+    e = H2V2Array(np.zeros(shape + (2,), dtype=np.int), 'int')
     return e.reparameterize(p)
 
 
 def rand(size=()):
-    data = np.zeros(size + (1,), dtype=np.int64)
+    data = np.zeros(size + (2,), dtype=np.int64)
     data[..., 0] = np.random.randint(0, 2, size)
+    data[..., 1] = np.random.randint(0, 2, size)
     return H2V2Array(data=data, p='int')

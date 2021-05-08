@@ -60,7 +60,7 @@ class H2Group(FiniteGroup, H2Array):
 H2 = H22Group()
 
 # Generators & special elements
-m = H2Array(data=np.array([0, 1]), p='int')
+m1 = H2Array(data=np.array([0, 1]), p='int')
 e = H2Array(data=np.array([0, 0]), p='int')
 
 
