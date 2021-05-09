@@ -136,12 +136,12 @@ def v_range(start=-1, stop=2, step=1):
     return P4H2V2Z2Array(m)
 
 
-def meshgrid(m=m_range(), r=r_range(), u=u_range(), v=v_range()):
-    m1 = P4H2V2Z2Array(m1.data[:, None, None, None, ...], p=m1.p)
-    m2 = P4H2V2Z2Array(m2.data[:, None, None, None, ...], p=m2.p)
-    r = P4H2V2Z2Array(r.data[:, None, None, None, ...], p=r.p)
-    u = P4H2V2Z2Array(u.data[None, None, :, None, ...], p=u.p)
-    v = P4H2V2Z2Array(v.data[None, None, None, :, ...], p=v.p)
+def meshgrid(m1=m_range(), m2=m_range(), r=r_range(), u=u_range(), v=v_range()):
+    m1 = P4H2V2Z2Array(m1.data[:, None, None, None, None, ...], p=m1.p)
+    m2 = P4H2V2Z2Array(m2.data[None, :, None, None, None, ...], p=m2.p)
+    r = P4H2V2Z2Array(r.data[None, None, :, None, None, ...], p=r.p)
+    u = P4H2V2Z2Array(u.data[None, None, None, :, None, ...], p=u.p)
+    v = P4H2V2Z2Array(v.data[None, None, None, None, :, ...], p=v.p)
     return u * v * m1 * m2 * r
 
 

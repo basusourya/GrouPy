@@ -125,9 +125,9 @@ def v_range(start=-1, stop=2, step=1):
     return H2V2Z2Array(m)
 
 
-def meshgrid(m=m_range(), r=r_range(), u=u_range(), v=v_range()):
+def meshgrid(m1=m_range(), m2=m_range(), u=u_range(), v=v_range()):
     m1 = H2V2Z2Array(m1.data[:, None, None, None, ...], p=m1.p)
-    m2 = H2V2Z2Array(m2.data[:, None, None, None, ...], p=m2.p)
+    m2 = H2V2Z2Array(m2.data[None, :, None, None, ...], p=m2.p)
     u = H2V2Z2Array(u.data[None, None, :, None, ...], p=u.p)
     v = H2V2Z2Array(v.data[None, None, None, :, ...], p=v.p)
     return u * v * m1 * m2
