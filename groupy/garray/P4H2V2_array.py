@@ -60,7 +60,7 @@ class P4H2V2Group(FiniteGroup, P4H2V2Array):
     def __init__(self):
         P4H2V2Array.__init__(
             self,
-            data=np.arange(3)[:, None],
+            data=np.array([[0, 0], [0, 1], [0, 2], [0, 3], [1, 0], [1, 1], [1, 2], [1, 3], [2, 0], [2, 1], [2, 2], [2, 3], [3, 0], [3, 1], [3, 2], [3, 3]]),
             p='int'
         )
         FiniteGroup.__init__(self, P4H2V2Array)

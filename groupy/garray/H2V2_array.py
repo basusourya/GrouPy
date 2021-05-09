@@ -52,7 +52,7 @@ class H2V2Group(FiniteGroup, H2V2Array):
     def __init__(self):
         H2V2Array.__init__(
             self,
-            data=np.arange(2)[:, None],
+            data=np.array([[0, 0], [0, 1], [1, 0], [1, 1]]),
             p='int'
         )
         FiniteGroup.__init__(self, H2V2Array)

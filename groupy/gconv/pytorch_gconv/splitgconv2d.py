@@ -6,10 +6,22 @@ import math
 from torch.nn.modules.utils import _pair
 from groupy.gconv.make_gconv_indices import *
 
-make_indices_functions = {(1, 4): make_c4_z2_indices,
-                          (4, 4): make_c4_p4_indices,
-                          (1, 8): make_d4_z2_indices,
-                          (8, 8): make_d4_p4m_indices}
+
+make_indices_functions = {'c4_z2': make_c4_z2_indices,
+                          'c4_p4': make_c4_p4_indices,
+                          'P4H2_z2': make_P4H2_z2_indices,
+                          'P4H2_P4H2Z2': make_P4H2_P4H2Z2_indices,
+                          'P4V2_z2': make_P4V2_z2_indices,
+                          'P4V2_P4V2Z2': make_P4V2_P4V2Z2_indices,
+                          'P4H2V2_z2': make_P4H2V2_z2_indices,
+                          'P4H2V2_P4H2V2Z2': make_P4H2V2_P4H2V2Z2_indices,
+                          'H2V2_z2': make_H2V2_z2_indices,
+                          'H2V2_H2V2Z2': make_H2V2_H2V2Z2_indices,
+                          'H2_z2': make_H2_z2_indices,
+                          'H2_H2Z2': make_H2_H2Z2_indices,
+                          'V2_z2': make_V2_z2_indices,
+                          'V2_V2Z2': make_V2_V2Z2_indices,
+                          }
 
 
 def trans_filter(w, inds):
@@ -24,7 +36,7 @@ def trans_filter(w, inds):
 class SplitGConv2D(nn.Module):
 
     def __init__(self, in_channels, out_channels, kernel_size, stride=1,
-                 padding=0, bias=True, input_stabilizer_size=1, output_stabilizer_size=4):
+                 padding=0, bias=True, input_stabilizer_size=1, output_stabilizer_size=4, inds_transformer='c4_z2'):
         super(SplitGConv2D, self).__init__()
         assert (input_stabilizer_size, output_stabilizer_size) in make_indices_functions.keys()
         self.ksize = kernel_size
@@ -40,6 +52,7 @@ class SplitGConv2D(nn.Module):
         self.padding = padding
         self.input_stabilizer_size = input_stabilizer_size
         self.output_stabilizer_size = output_stabilizer_size
+        self.inds_transformer = inds_transformer
 
         self.weight = Parameter(torch.Tensor(
             out_channels, in_channels, self.input_stabilizer_size, *kernel_size))
@@ -61,7 +74,7 @@ class SplitGConv2D(nn.Module):
             self.bias.data.uniform_(-stdv, stdv)
 
     def make_transformation_indices(self):
-        return make_indices_functions[(self.input_stabilizer_size, self.output_stabilizer_size)](self.ksize)
+        return make_indices_functions[self.inds_transformer](self.ksize)
 
     def forward(self, input):
         tw = trans_filter(self.weight, self.inds)
@@ -88,22 +101,69 @@ class SplitGConv2D(nn.Module):
 class P4ConvZ2(SplitGConv2D):
 
     def __init__(self, *args, **kwargs):
-        super(P4ConvZ2, self).__init__(input_stabilizer_size=1, output_stabilizer_size=4, *args, **kwargs)
-
+        super(P4ConvZ2, self).__init__(input_stabilizer_size=1, output_stabilizer_size=4, inds_transformer='c4_z2', *args, **kwargs)
 
 class P4ConvP4(SplitGConv2D):
 
     def __init__(self, *args, **kwargs):
-        super(P4ConvP4, self).__init__(input_stabilizer_size=4, output_stabilizer_size=4, *args, **kwargs)
+        super(P4ConvP4, self).__init__(input_stabilizer_size=4, output_stabilizer_size=4, inds_transformer='c4_p4', *args, **kwargs)
 
-
-class P4MConvZ2(SplitGConv2D):
-
-    def __init__(self, *args, **kwargs):
-        super(P4MConvZ2, self).__init__(input_stabilizer_size=1, output_stabilizer_size=8, *args, **kwargs)
-
-
-class P4MConvP4M(SplitGConv2D):
+class P4H2ConvZ2(SplitGConv2D):
 
     def __init__(self, *args, **kwargs):
-        super(P4MConvP4M, self).__init__(input_stabilizer_size=8, output_stabilizer_size=8, *args, **kwargs)
+        super(P4H2ConvZ2, self).__init__(input_stabilizer_size=1, output_stabilizer_size=8, inds_transformer='P4H2_z2', *args, **kwargs)
+
+class P4H2ConvP4H2(SplitGConv2D):
+
+    def __init__(self, *args, **kwargs):
+        super(P4H2ConvP4H2, self).__init__(input_stabilizer_size=8, output_stabilizer_size=8, inds_transformer='P4H2_P4H2Z2', *args, **kwargs)
+
+class P4V2ConvZ2(SplitGConv2D):
+
+    def __init__(self, *args, **kwargs):
+        super(P4V2ConvZ2, self).__init__(input_stabilizer_size=1, output_stabilizer_size=8, inds_transformer='P4V2_z2', *args, **kwargs)
+
+class P4V2ConvP4V2(SplitGConv2D):
+
+    def __init__(self, *args, **kwargs):
+        super(P4V2ConvP4V2, self).__init__(input_stabilizer_size=8, output_stabilizer_size=8, inds_transformer='P4V2_P4V2Z2', *args, **kwargs)
+
+class P4H2V2ConvZ2(SplitGConv2D):
+
+    def __init__(self, *args, **kwargs):
+        super(P4H2V2ConvZ2, self).__init__(input_stabilizer_size=1, output_stabilizer_size=16, inds_transformer='P4H2V2_z2', *args, **kwargs)
+
+class P4H2V2ConvP4H2V2(SplitGConv2D):
+
+    def __init__(self, *args, **kwargs):
+        super(P4H2V2ConvP4H2V2, self).__init__(input_stabilizer_size=16, output_stabilizer_size=16, inds_transformer='P4H2V2_P4H2V2Z2', *args, **kwargs)
+
+class H2V2ConvZ2(SplitGConv2D):
+
+    def __init__(self, *args, **kwargs):
+        super(H2V2ConvZ2, self).__init__(input_stabilizer_size=1, output_stabilizer_size=4, inds_transformer='H2V2_z2', *args, **kwargs)
+
+class H2V2ConvH2V2(SplitGConv2D):
+
+    def __init__(self, *args, **kwargs):
+        super(H2V2ConvH2V2, self).__init__(input_stabilizer_size=4, output_stabilizer_size=4, inds_transformer='H2V2_H2V2Z2', *args, **kwargs)
+
+class H2ConvZ2(SplitGConv2D):
+
+    def __init__(self, *args, **kwargs):
+        super(H2ConvZ2, self).__init__(input_stabilizer_size=1, output_stabilizer_size=2, inds_transformer='H2_z2', *args, **kwargs)
+
+class H2ConvH2(SplitGConv2D):
+
+    def __init__(self, *args, **kwargs):
+        super(H2ConvH2, self).__init__(input_stabilizer_size=2, output_stabilizer_size=2, inds_transformer='H2_H2Z2', *args, **kwargs)
+
+class V2ConvZ2(SplitGConv2D):
+
+    def __init__(self, *args, **kwargs):
+        super(V2ConvZ2, self).__init__(input_stabilizer_size=1, output_stabilizer_size=2, inds_transformer='V2_z2', *args, **kwargs)
+
+class V2ConvV2(SplitGConv2D):
+
+    def __init__(self, *args, **kwargs):
+        super(V2ConvV2, self).__init__(input_stabilizer_size=2, output_stabilizer_size=2, inds_transformer='V2_V2Z2', *args, **kwargs)
