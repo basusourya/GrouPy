@@ -45,7 +45,6 @@ def make_c4_p4_indices(ksize):
     li = f.left_translation_indices(C4[:, None, None, None])
     if ksize % 2 == 0:
         li = f.left_translation_indices(C4_halfshift[:, None, None, None]) # this adds the output channel stabilizer # output channel related\
-        
     return li.astype('int32')
 
 
