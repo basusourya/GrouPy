@@ -111,17 +111,7 @@ def mirror_u(shape=None):
     return P4H2V2Z2Array(mdata)
 
 
-def r_range(start=0, stop=4, step=1):
-    assert stop > 0
-    assert stop <= 4
-    assert start >= 0
-    assert start < 4
-    assert start < stop
-    m = np.zeros((stop - start, 4), dtype=np.int)
-    m[:, 1] = np.arange(start, stop, step)
-    return P4H2V2Z2Array(m)
-
-def m_range(start=0, stop=2):
+def m1_range(start=0, stop=2):
     assert stop > 0
     assert stop <= 2
     assert start >= 0
@@ -131,11 +121,30 @@ def m_range(start=0, stop=2):
     m[:, 0] = np.arange(start, stop)
     return P4H2V2Z2Array(m)
 
+def m2_range(start=0, stop=2):
+    assert stop > 0
+    assert stop <= 2
+    assert start >= 0
+    assert start < 2
+    assert start < stop
+    m = np.zeros((stop - start, 5), dtype=np.int)
+    m[:, 1] = np.arange(start, stop)
+    return P4H2V2Z2Array(m)
 
+def r_range(start=0, stop=4, step=1):
+    assert stop > 0
+    assert stop <= 4
+    assert start >= 0
+    assert start < 4
+    assert start < stop
+    m = np.zeros((stop - start, 5), dtype=np.int)
+    m[:, 2] = np.arange(start, stop, step)
+    return P4H2V2Z2Array(m)
+    
 
 def u_range(start=-1, stop=2, step=1):
     m = np.zeros((stop - start, 5), dtype=np.int)
-    m[:, 2] = np.arange(start, stop, step)
+    m[:, 3] = np.arange(start, stop, step)
     return P4H2V2Z2Array(m)
 
 
@@ -145,7 +154,7 @@ def v_range(start=-1, stop=2, step=1):
     return P4H2V2Z2Array(m)
 
 
-def meshgrid(m1=m_range(), m2=m_range(), r=r_range(), u=u_range(), v=v_range()):
+def meshgrid(m1=m1_range(), m2=m2_range(), r=r_range(), u=u_range(), v=v_range()):
     m1 = P4H2V2Z2Array(m1.data[:, None, None, None, None, ...], p=m1.p)
     m2 = P4H2V2Z2Array(m2.data[None, :, None, None, None, ...], p=m2.p)
     r = P4H2V2Z2Array(r.data[None, None, :, None, None, ...], p=r.p)
