@@ -73,10 +73,10 @@ class P4H2V2Group(FiniteGroup, P4H2V2Array):
 P4H2V2 = P4H2V2Group()
 
 # Generators & special elements
-r = P4H2V2Array(data=np.array([0, 1]), p='int')
-m1 = P4H2V2Array(data=np.array([1, 0]), p='int')
-m1 = P4H2V2Array(data=np.array([2, 0]), p='int')
-e = P4H2V2Array(data=np.array([0, 0]), p='int')
+r = P4H2V2Array(data=np.array([0, 0, 1]), p='int')
+m1 = P4H2V2Array(data=np.array([1, 0, 0]), p='int')
+m2 = P4H2V2Array(data=np.array([0, 1, 0]), p='int')
+e = P4H2V2Array(data=np.array([0, 0, 0]), p='int')
 
 
 def identity(shape=(), p='int'):
