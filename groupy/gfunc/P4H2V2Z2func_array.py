@@ -29,8 +29,8 @@ class P4H2V2Z2FuncArray(GFuncArray):
         self.vmax = vmax
 
         i2g = p4h2v2z2a.meshgrid(
-            m1=p4h2v2z2a.m_range(),
-            m2=p4h2v2z2a.m_range(),
+            m1=p4h2v2z2a.m1_range(),
+            m2=p4h2v2z2a.m2_range(),
             r=p4h2v2z2a.r_range(0, 4),
             u=p4h2v2z2a.u_range(self.umin, self.umax + 1),
             v=p4h2v2z2a.v_range(self.vmin, self.vmax + 1)
