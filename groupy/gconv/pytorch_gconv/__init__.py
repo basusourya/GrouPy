@@ -1,1 +1,1 @@
-from groupy.gconv.pytorch_gconv.splitgconv2d import P4ConvZ2, P4ConvP4, P4MConvZ2, P4MConvP4M
+from groupy.gconv.pytorch_gconv.splitgconv2d import P4ConvZ2, P4ConvP4, P4H2ConvZ2, P4H2ConvP4H2, P4V2ConvZ2, P4V2ConvP4V2, P4H2V2ConvZ2, P4H2V2ConvP4H2V2, H2V2ConvZ2, H2V2ConvH2V2, H2ConvZ2, H2ConvH2, V2ConvZ2, V2ConvV2
