@@ -113,13 +113,13 @@ class GFuncArray(object):
         raise NotImplementedError()
 
     def left_translation_points(self, g):
-        print("i2g",i2g)
+        print("i2g",self.i2g)
         print("g.inv()",g.inv())
         print("g.inv() * self.i2g", g.inv() * self.i2g)
         return g.inv() * self.i2g
 
     def right_translation_points(self, g):
-        print("i2g",i2g)
+        print("i2g",self.i2g)
         print("g",g)
         print("self.i2g * g", self.i2g * g)
         return self.i2g * g
