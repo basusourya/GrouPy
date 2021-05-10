@@ -28,6 +28,7 @@ class P4H2V2Array(MatrixGArray):
     def int2mat(self, int_data):
         m1 = int_data[..., 0]
         m2 = int_data[..., 1]
+        r = int_data[..., 2]
         out = np.zeros(int_data.shape[:-1] + self._g_shapes['mat'], dtype=np.int)
         out[..., 0, 0] = np.cos(0.5 * np.pi * r) * (-1) ** m1
         out[..., 0, 1] = -np.sin(0.5 * np.pi * r) * (-1) ** m1
