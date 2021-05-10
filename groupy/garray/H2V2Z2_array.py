@@ -101,7 +101,7 @@ def mirror_u(shape=None):
 
 
 
-def m_range(start=0, stop=2):
+def m1_range(start=0, stop=2):
     assert stop > 0
     assert stop <= 2
     assert start >= 0
@@ -109,6 +109,16 @@ def m_range(start=0, stop=2):
     assert start < stop
     m = np.zeros((stop - start, 4), dtype=np.int)
     m[:, 0] = np.arange(start, stop)
+    return H2V2Z2Array(m)
+
+def m2_range(start=0, stop=2):
+    assert stop > 0
+    assert stop <= 2
+    assert start >= 0
+    assert start < 2
+    assert start < stop
+    m = np.zeros((stop - start, 4), dtype=np.int)
+    m[:, 1] = np.arange(start, stop)
     return H2V2Z2Array(m)
 
 
@@ -121,7 +131,7 @@ def u_range(start=-1, stop=2, step=1):
 
 def v_range(start=-1, stop=2, step=1):
     m = np.zeros((stop - start, 4), dtype=np.int)
-    m[:, 4] = np.arange(start, stop, step)
+    m[:, 3] = np.arange(start, stop, step)
     return H2V2Z2Array(m)
 
 
