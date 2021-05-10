@@ -38,6 +38,7 @@ class SplitGConv2D(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1,
                  padding=0, bias=True, input_stabilizer_size=1, output_stabilizer_size=4, inds_transformer='c4_z2'):
         super(SplitGConv2D, self).__init__()
+        print("inds_transformer",inds_transformer)
         assert inds_transformer in make_indices_functions.keys()
         self.ksize = kernel_size
 
