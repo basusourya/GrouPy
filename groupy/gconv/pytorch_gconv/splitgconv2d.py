@@ -60,6 +60,7 @@ class SplitGConv2D(nn.Module):
             self.bias = Parameter(torch.Tensor(out_channels))
         else:
             self.register_parameter('bias', None)
+        self.tw = self.weight
         self.reset_parameters()
 
         self.inds = self.make_transformation_indices()
@@ -78,6 +79,7 @@ class SplitGConv2D(nn.Module):
 
     def forward(self, input):
         tw = trans_filter(self.weight, self.inds)
+        self.tw = tw
         tw_shape = (self.out_channels * self.output_stabilizer_size,
                     self.in_channels * self.input_stabilizer_size,
                     self.ksize, self.ksize)
