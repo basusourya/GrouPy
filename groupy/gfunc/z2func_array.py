@@ -32,7 +32,7 @@ class Z2FuncArray(GFuncArray):
             u=z2a.u_range(self.umin, self.umax + 1),
             v=z2a.v_range(self.vmin, self.vmax + 1)
         )
-
+        print("i2g",i2g)
         super(Z2FuncArray, self).__init__(v=v, i2g=i2g)
 
     def g2i(self, g):
