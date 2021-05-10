@@ -60,7 +60,7 @@ class SplitGConv2D(nn.Module):
             self.bias = Parameter(torch.Tensor(out_channels))
         else:
             self.register_parameter('bias', None)
-        self.tw = self.weight
+        self.tw = None
         self.reset_parameters()
 
         self.inds = self.make_transformation_indices()
