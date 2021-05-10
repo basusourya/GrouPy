@@ -33,7 +33,7 @@ def make_c4_z2_indices(ksize):
     if ksize % 2 == 0:
         uv = f.left_translation_indices(C4_halfshift[:, None, None, None]) # left_translation = g*i2g at a high-level, # output channel related
     else:
-        uv = f.left_translation_indices(C4[:, None, None, None])
+        uv = f.left_translation_indices(C4[:, None, None, None]) # C4 here is the group
     r = np.zeros(uv.shape[:-1] + (1,))
     ruv = np.c_[r, uv]
     return ruv.astype('int32')
