@@ -39,7 +39,7 @@ class SplitGConv2D(nn.Module):
                  padding=0, bias=True, input_stabilizer_size=1, output_stabilizer_size=4, inds_transformer='c4_z2'):
         super(SplitGConv2D, self).__init__()
         print("inds_transformer",inds_transformer)
-        assert inds_transformer in make_indices_functions.keys()
+        #assert inds_transformer in make_indices_functions.keys()
         self.ksize = kernel_size
 
         kernel_size = _pair(kernel_size)
