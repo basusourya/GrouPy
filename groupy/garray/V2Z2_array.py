@@ -110,13 +110,13 @@ def m_range(start=0, stop=2):
 
 def u_range(start=-1, stop=2, step=1):
     m = np.zeros((stop - start, 3), dtype=np.int)
-    m[:, 2] = np.arange(start, stop, step)
+    m[:, 1] = np.arange(start, stop, step)
     return V2Z2Array(m)
 
 
 def v_range(start=-1, stop=2, step=1):
     m = np.zeros((stop - start, 3), dtype=np.int)
-    m[:, 3] = np.arange(start, stop, step)
+    m[:, 2] = np.arange(start, stop, step)
     return V2Z2Array(m)
 
 
