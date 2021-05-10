@@ -69,7 +69,7 @@ class P4H2V2Group(FiniteGroup, P4H2V2Array):
         return P4H2V2Array(*args, **kwargs)
 
 
-P4H2V2 = P4H2V22Group()
+P4H2V2 = P4H2V2Group()
 
 # Generators & special elements
 r = P4H2V2Array(data=np.array([0, 1]), p='int')
