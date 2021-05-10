@@ -33,6 +33,7 @@ class H2Z2FuncArray(GFuncArray):
             u=h2z2a.u_range(self.umin, self.umax + 1),
             v=h2z2a.v_range(self.vmin, self.vmax + 1)
         )
+        print("i2g",i2g)
 
         super(H2Z2FuncArray, self).__init__(v=v, i2g=i2g)
 
