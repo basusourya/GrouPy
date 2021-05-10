@@ -119,8 +119,8 @@ def r_range(start=0, stop=4, step=1):
     assert start < stop
     m = np.zeros((stop - start, 4), dtype=np.int)
     m[:, 1] = np.arange(start, stop, step)
-    return P4H2Z2Array(m)
-    
+    return P4H2V2Z2Array(m)
+
 def m_range(start=0, stop=2):
     assert stop > 0
     assert stop <= 2
