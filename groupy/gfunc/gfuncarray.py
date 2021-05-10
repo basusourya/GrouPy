@@ -113,16 +113,10 @@ class GFuncArray(object):
         raise NotImplementedError()
 
     def left_translation_points(self, g):
-        print("i2g",self.i2g)
-        print("g.inv()",g.inv())
-        print("g.inv() * self.i2g", g.inv() * self.i2g)
-        return g.inv() * self.i2g
+        return g.inv() * self.i2g   # The (*) operator here is redefined as left action in __mul__ in garray class
 
     def right_translation_points(self, g):
-        print("i2g",self.i2g)
-        print("g",g)
-        print("self.i2g * g", self.i2g * g)
-        return self.i2g * g
+        return self.i2g * g         # The (*) operator here is redefined as left action in __mul__ in garray class
 
     def left_translation_indices(self, g):
         ginv_s = self.left_translation_points(g)
