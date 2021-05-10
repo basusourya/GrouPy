@@ -60,8 +60,8 @@ class V2Group(FiniteGroup, V2Array):
 V2 = V2Group()
 
 # Generators & special elements
-m = V2Array(data=np.array([0, 1]), p='int')
-e = V2Array(data=np.array([0, 0]), p='int')
+m = V2Array(data=np.array([1]), p='int')
+e = V2Array(data=np.array([0]), p='int')
 
 
 def identity(shape=(), p='int'):

@@ -60,8 +60,8 @@ class H2Group(FiniteGroup, H2Array):
 H2 = H2Group()
 
 # Generators & special elements
-m1 = H2Array(data=np.array([0, 1]), p='int')
-e = H2Array(data=np.array([0, 0]), p='int')
+m1 = H2Array(data=np.array([1]), p='int')
+e = H2Array(data=np.array([0]), p='int')
 
 
 def identity(shape=(), p='int'):
