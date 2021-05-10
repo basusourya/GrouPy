@@ -61,7 +61,7 @@ class H2V2Group(FiniteGroup, H2V2Array):
         return H2V2Array(*args, **kwargs)
 
 
-H2V2 = H2V22Group()
+H2V2 = H2V2Group()
 
 # Generators & special elements
 m1 = H2V2Array(data=np.array([0, 1]), p='int')

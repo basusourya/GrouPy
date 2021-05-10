@@ -57,7 +57,7 @@ class V2Group(FiniteGroup, V2Array):
         return V2Array(*args, **kwargs)
 
 
-V2 = V22Group()
+V2 = V2Group()
 
 # Generators & special elements
 m = V2Array(data=np.array([0, 1]), p='int')

@@ -57,7 +57,7 @@ class H2Group(FiniteGroup, H2Array):
         return H2Array(*args, **kwargs)
 
 
-H2 = H22Group()
+H2 = H2Group()
 
 # Generators & special elements
 m1 = H2Array(data=np.array([0, 1]), p='int')
