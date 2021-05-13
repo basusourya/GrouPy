@@ -62,8 +62,10 @@ class SplitGConv2D(nn.Module):
             self.register_parameter('bias', None)
         self.tw = None
         self.reset_parameters()
+        self.inds = None
+        if self.inds_transformer!='Z2_Z2':
+            self.inds = self.make_transformation_indices()
 
-        self.inds = self.make_transformation_indices()
 
     def reset_parameters(self):
         n = self.in_channels
@@ -78,7 +80,9 @@ class SplitGConv2D(nn.Module):
         return make_indices_functions[self.inds_transformer](self.ksize)
 
     def forward(self, input):
-        tw = trans_filter(self.weight, self.inds)
+        tw = self.weight
+        if self.inds_transformer!='Z2_Z2':
+            tw = trans_filter(self.weight, self.inds)
         self.tw = tw
         tw_shape = (self.out_channels * self.output_stabilizer_size,
                     self.in_channels * self.input_stabilizer_size,
@@ -169,3 +173,7 @@ class V2ConvV2(SplitGConv2D):
 
     def __init__(self, *args, **kwargs):
         super(V2ConvV2, self).__init__(input_stabilizer_size=2, output_stabilizer_size=2, inds_transformer='V2_V2Z2', *args, **kwargs)
+class Z2ConvZ2(SplitGConv2D):
+
+    def __init__(self, *args, **kwargs):
+        super(Z2ConvZ2, self).__init__(input_stabilizer_size=1, output_stabilizer_size=1, inds_transformer='Z2_Z2', *args, **kwargs)
