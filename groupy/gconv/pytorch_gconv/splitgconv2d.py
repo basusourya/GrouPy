@@ -173,6 +173,7 @@ class V2ConvV2(SplitGConv2D):
 
     def __init__(self, *args, **kwargs):
         super(V2ConvV2, self).__init__(input_stabilizer_size=2, output_stabilizer_size=2, inds_transformer='V2_V2Z2', *args, **kwargs)
+        
 class Z2ConvZ2(SplitGConv2D):
 
     def __init__(self, *args, **kwargs):
