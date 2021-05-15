@@ -30,7 +30,6 @@ output_size = input_size
 n_actions = output_size
 
 #=====================================================================Q-Network=========================================================================================================
-
 class QNet(nn.Module):
     def __init__(self, input_size, hidden_sizes, num_classes):
         super(QNet, self).__init__()                   # Inherited from the parent class nn.Module
@@ -85,17 +84,6 @@ garray2_dict = {
             '011': 'H2V2ConvH2V2',
             '001': 'H2ConvH2',
             '010': 'V2ConvV2'
-            }
-
-accuracy_dict = {
-            '000': 12,
-            '100': 20,
-            '101': 20,
-            '110': 20,
-            '111': 32,
-            '011': 12,
-            '001': 12,
-            '010': 12
             }
 
 gconv_dict = {
@@ -160,7 +148,7 @@ net_size_dict = {
             0: 1  # 0 = small
             }
 #===================================================================== Dataloaders =================================================================================================
-def cifar10_transform_array(aug_dict=aug_dict, aug_array=torch.zeros(6), seed=12345):
+def svhn_transform_array(aug_dict=aug_dict, aug_array=torch.zeros(6), seed=12345):
   # Outputs the array of transformations from aug_array
   torch.manual_seed(seed)
   transforms_array = []
@@ -171,10 +159,10 @@ def cifar10_transform_array(aug_dict=aug_dict, aug_array=torch.zeros(6), seed=12
   transforms_array.append(transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
   return transforms_array
 
-def cifar10_trainloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, train_batch_size = 32, mini_trainsize = 4000, mini_train=True):
+def svhn_trainloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, train_batch_size = 32, mini_trainsize = 4000, mini_train=True):
   torch.manual_seed(seed)
-  transform = transforms.Compose(cifar10_transform_array(aug_dict=aug_dict, aug_array=aug_array, seed=12345))
-  trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
+  transform = transforms.Compose(svhn_transform_array(aug_dict=aug_dict, aug_array=aug_array, seed=12345))
+  trainset = torchvision.datasets.SVHN(root='./data', split='train',
                                         download=True, transform=transform)
   trainloader = torch.utils.data.DataLoader(trainset, batch_size=train_batch_size, shuffle=True, num_workers=2)
   if mini_train == True:
@@ -182,10 +170,10 @@ def cifar10_trainloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, trai
     trainloader = torch.utils.data.DataLoader(trainset_mini, batch_size=train_batch_size, shuffle=True, num_workers=2)
   return trainloader
 
-def cifar10_testloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, test_batch_size = 1000, mini_testsize = 1000, mini_test=True):
+def svhn_testloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, test_batch_size = 1000, mini_testsize = 1000, mini_test=True):
   torch.manual_seed(seed)
-  testtransform = transforms.Compose(cifar10_transform_array(aug_dict=aug_dict, seed=12345))
-  testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=testtransform)
+  testtransform = transforms.Compose(svhn_transform_array(aug_dict=aug_dict, seed=12345))
+  testset = torchvision.datasets.SVHN(root='./data', split='test', download=True, transform=testtransform)
   testloader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=True, num_workers=2)
   if mini_test == True:
     testset_mini, _= torch.utils.data.random_split(testset, [mini_testsize, len(testset) - mini_testsize])
@@ -341,8 +329,8 @@ class Environment(object):
     #print("No. of parameters:", sum(p.numel() for p in model.parameters() if p.requires_grad))
     child_criterion = nn.CrossEntropyLoss()
     child_optimizer = optim.SGD(child_model.parameters(), lr=self.child_lr, momentum=0.9)
-    trainloader = cifar10_trainloader(aug_dict=aug_dict, aug_array=train_aug_array, seed=12345, train_batch_size = self.child_batch_size, mini_trainsize = self.child_train_size, mini_train=True)
-    testloader = cifar10_testloader(aug_dict=aug_dict, aug_array=test_aug_array, seed=12345, test_batch_size = self.child_test_batch_size, mini_testsize = self.child_test_size, mini_test=True)
+    trainloader = svhn_trainloader(aug_dict=aug_dict, aug_array=train_aug_array, seed=12345, train_batch_size = self.child_batch_size, mini_trainsize = self.child_train_size, mini_train=True)
+    testloader = svhn_testloader(aug_dict=aug_dict, aug_array=test_aug_array, seed=12345, test_batch_size = self.child_test_batch_size, mini_testsize = self.child_test_size, mini_test=True)
     testaccuracy = 0
     for epoch in range(self.child_epochs):
       #start_time = time.time()
@@ -432,21 +420,12 @@ def select_action(state, EPS, device, n_actions, policy_net):
 
 def plot_update(x_models_trained, y_accuracy):
   fig = plt.figure()
-  plt.title('Deep Q-learning CIFAR10')
+  plt.title('Deep Q-learning SVHN')
   plt.xlabel('Models trained')
   plt.ylabel('Accuracy')
   plt.plot(x_models_trained, y_accuracy, label="Accuray")
   plt.pause(0.001)  #pause a bit so that plots are updated
-  fig.savefig('GNAS_GCNN_CIFAR10.eps', format='eps', dpi=1000)
-
-def plot_steps_update(x_steps, y_accuracy_per_step):
-  fig = plt.figure()
-  plt.title('Deep Q-learning CIFAR10')
-  plt.xlabel('Steps')
-  plt.ylabel('Accuracy')
-  plt.plot(x_steps, y_accuracy_per_step, label="Accuray")
-  plt.pause(0.001)  #pause a bit so that plots are updated
-  fig.savefig('GNAS_GCNN_steps_CIFAR10.eps', format='eps', dpi=1000)
+  fig.savefig('GNAS_GCNN_SVHN.eps', format='eps', dpi=1000)
 
 def plot_overall(x_models_trained, y_accuracy):
   # average windowed plot
@@ -467,7 +446,7 @@ def plot_overall(x_models_trained, y_accuracy):
 
   y_epsilon_accuracy = y_epsilon_accuracy[window_size:len(x_models_trained)]
   fig = plt.figure()
-  plt.title('Deep Q-learning CIFAR10')
+  plt.title('Deep Q-learning SVHN')
   plt.xlabel('Models trained')
   plt.ylabel('Accuracy')
   plt.plot(x_models_trained_window, y_accuracy_window, label="Rolling mean Accuray")
@@ -491,7 +470,7 @@ def plot_overall(x_models_trained, y_accuracy):
   fig.text(0.795,0.14,'$.1$')
   fig.text(0.83,0.14,'$.05$')
   plt.pause(0.001)  #pause a bit so that plots are updated
-  fig.savefig('GNAS_GCNN_CIFAR10'+'.eps', format='eps', dpi=1000)
+  fig.savefig('GNAS_GCNN_SVHN'+'.eps', format='eps', dpi=1000)
 
 #plot_overall(x_models_trained, y_accuracy)
 
@@ -546,7 +525,7 @@ def optimize_model(k, device, memory, q_optimizer, Q_BATCH_SIZE, Q_GAMMA):
 def main():
   # Training settings
   # For multiple augmentations set the flag --multiple-augmentations to true
-  parser = argparse.ArgumentParser(description='Deep Q-learning CIFAR10')
+  parser = argparse.ArgumentParser(description='Deep Q-learning SVHN')
   parser.add_argument('--child-batch-size', type=int, default=32, metavar='N',
             help='input batch size for training (default: 32)')
   parser.add_argument('--child-test-batch-size', type=int, default=1000, metavar='N',
@@ -579,7 +558,7 @@ def main():
             help='augmentation index to be used from aug_array_list')
   parser.add_argument('--state-size', type=int, default=10,
             help='Size of the group array')
-  parser.add_argument('--max_models', type=int, default=600,
+  parser.add_argument('--max_models', type=int, default=400,
             help='Maximum number of models to be trained')
   parser.add_argument('--max_episodes', type=int, default=100,
             help='Maximum number of episodes')
@@ -616,8 +595,8 @@ def main():
   memory = ReplayMemory(10000)
 
   #=======================================================================Setup for Q-learning=============================================================================
-  Q_BATCH_SIZE = args.Q_BATCH_SIZE
-  Q_GAMMA = args.Q_GAMMA # Dependency on the future
+  Q_BATCH_SIZE = 128
+  Q_GAMMA = 0.5 # Dependency on the future
   Q_EPS_LIST = [1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05,0.01]
   Q_EPS_INDEX = 0
   Q_EPS = Q_EPS_LIST[Q_EPS_INDEX]
@@ -626,9 +605,6 @@ def main():
   env = Environment(device=device, child_network_dimensions=child_network_dimensions, child_train_size=args.child_train_size, child_test_size=args.child_test_size, child_batch_size=args.child_batch_size, child_test_batch_size=args.child_test_batch_size, child_lr=args.child_lr, child_epochs=args.child_epochs, state_size=args.state_size)
   y_accuracy = [env.base_accuracy] # Compute the rolling mean accuracy and average per epsilon accuracy from here
   x_models_trained = [env.models_trained] # Should be an enumeration from 1,...,total models to be trained.
-  y_accuracy_per_step = []
-  steps = 0
-  x_steps = []
   steps_per_model_list = []
   average_model_accuracy = env.base_accuracy
   steps_per_model = 1 # Considering the base accuracies and steps
@@ -647,9 +623,6 @@ def main():
     steps_per_model += 1
     average_model_accuracy = (average_model_accuracy*(steps_per_model-1) + accuracy)/steps_per_model
 
-    steps += 1
-    y_accuracy_per_step.append(accuracy)
-    x_steps.append(steps)
     #================================================Perform one step of the optimization (on the target network)===========================================================
     optimize_model(env.k, device, memory, q_optimizer, Q_BATCH_SIZE, Q_GAMMA)
     #=======================Check if new models are trained===========================================
@@ -675,18 +648,17 @@ def main():
     # Update the target network, copying all weights and biases in DQN
     if env.models_trained % Q_TARGET_UPDATE == 0:
       target_net.load_state_dict(policy_net.state_dict())
-      torch.save(target_net.state_dict(), "Target_Net_CIFAR10_DQN")
+      torch.save(target_net.state_dict(), "Target_Net_SVHN_DQN")
 
   #plot_overall(x_models_trained, y_accuracy, args.aug_array_id)
 
   # Save network and plot data
-  np.save("y_accuracy_CIFAR10",y_accuracy)
-  np.save("x_models_CIFAR10",x_models_trained)
-  np.save("steps_per_model_CIFAR10",steps_per_model_list)
-  np.save("model_accuracies_CIFAR10",env.visited_model_accuracies)
-  np.save("model_rewards_CIFAR10",env.visited_model_rewards)
-  torch.save(policy_net.state_dict(), "CIFAR10_DQN")
-  plot_steps_update(x_steps, y_accuracy_per_step)
+  np.save("y_accuracy_SVHN",y_accuracy)
+  np.save("x_models_SVHN",x_models_trained)
+  np.save("steps_per_model_SVHN",steps_per_model_list)
+  np.save("model_accuracies_SVHN",env.visited_model_accuracies)
+  np.save("model_rewards_SVHN",env.visited_model_rewards)
+  torch.save(policy_net.state_dict(), "SVHN_DQN")
   print('Complete')
 
 
