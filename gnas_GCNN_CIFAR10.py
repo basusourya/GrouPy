@@ -330,7 +330,6 @@ class Environment(object):
     state = [int(i) for i in state]
     torch.manual_seed(1)
     group_array = ''.join(str(e) for e in state[0:3])
-    return accuracy_dict[group_array] # Remove it after testing
     GConv1 = garray1_dict[group_array]
     GConv2 = garray2_dict[group_array]
     aug_array = state[3:9]
