@@ -384,25 +384,6 @@ class ReplayMemory(object):
   def sample(self, batch_size):
     return random.sample(self.memory, batch_size)
 
-#=====================================================================Q-Network=========================================================================================================
-
-class QNet(nn.Module):
-    def __init__(self, input_size, hidden_sizes, num_classes):
-        super(QNet, self).__init__()                   # Inherited from the parent class nn.Module
-        self.fc1 = nn.Linear(input_size, hidden_sizes[0])  # 1st Full-Connected Layer: k (input data) -> 500 (hidden node)
-        self.relu = nn.ReLU()                          # Non-Linear ReLU Layer: max(0,x)
-        self.fc2 = nn.Linear(hidden_sizes[0], hidden_sizes[1])
-        self.fc3 = nn.Linear(hidden_sizes[1], hidden_sizes[2]) # 2nd Full-Connected Layer: 500 (hidden node) -> k (output class)
-        self.fc4 = nn.Linear(hidden_sizes[2], num_classes)
-    
-    def forward(self, x):                              # Forward pass: stacking each layer together
-        x = x/10
-        out = self.relu(self.fc1(x))
-        out = self.relu(self.fc2(out))
-        out = self.relu(self.fc3(out))
-        out = self.fc4(out)
-        return out
-
 #=====================================================================Select action=========================================================================================================
 
 steps_done = 0
@@ -597,7 +578,7 @@ def main():
   #=======================================================================Setup for Q-learning=============================================================================
   Q_BATCH_SIZE = 128
   Q_GAMMA = 0.5 # Dependency on the future
-  Q_EPS_LIST = [1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05,0.01]
+  Q_EPS_LIST = [1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05,0.01,0.01]
   Q_EPS_INDEX = 0
   Q_EPS = Q_EPS_LIST[Q_EPS_INDEX]
   Q_MODELS_TRAINED_LIST = [50,100,150,200,225,250,275,300,325,350,375,400]
