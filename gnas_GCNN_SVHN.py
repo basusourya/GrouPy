@@ -412,7 +412,7 @@ def plot_overall(x_models_trained, y_accuracy):
   # average windowed plot
   # averaged epsilon plot
   window_size = 60 # window_size < 200
-  EPS_MODELS_TRAINED_LIST = [0,50,100,150,200,225,250,275,300,325,350,375,400]
+  EPS_MODELS_TRAINED_LIST = [0,50,100,150,200,250,300,350,400,450,500,550,600]
   EPS_LIST = [1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05,0.01]
 
   y_accuracy_window = [sum(y_accuracy[i:i+window_size])/window_size for i in range(len(y_accuracy)-window_size)]
@@ -539,7 +539,7 @@ def main():
             help='augmentation index to be used from aug_array_list')
   parser.add_argument('--state-size', type=int, default=10,
             help='Size of the group array')
-  parser.add_argument('--max_models', type=int, default=400,
+  parser.add_argument('--max_models', type=int, default=600,
             help='Maximum number of models to be trained')
   parser.add_argument('--max_episodes', type=int, default=100,
             help='Maximum number of episodes')
@@ -581,7 +581,7 @@ def main():
   Q_EPS_LIST = [1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05,0.01,0.01]
   Q_EPS_INDEX = 0
   Q_EPS = Q_EPS_LIST[Q_EPS_INDEX]
-  Q_MODELS_TRAINED_LIST = [50,100,150,200,225,250,275,300,325,350,375,400]
+  Q_MODELS_TRAINED_LIST = [50,100,150,200,250,300,350,400,450,500,550,600]
   Q_TARGET_UPDATE = 2
   env = Environment(device=device, child_network_dimensions=child_network_dimensions, child_train_size=args.child_train_size, child_test_size=args.child_test_size, child_batch_size=args.child_batch_size, child_test_batch_size=args.child_test_batch_size, child_lr=args.child_lr, child_epochs=args.child_epochs, state_size=args.state_size)
   y_accuracy = [env.base_accuracy] # Compute the rolling mean accuracy and average per epsilon accuracy from here
