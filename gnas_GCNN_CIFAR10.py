@@ -24,6 +24,35 @@ from torch.autograd import Variable
 from groupy.gconv.pytorch_gconv.splitgconv2d import P4ConvZ2, P4ConvP4, P4H2ConvZ2, P4H2ConvP4H2, P4V2ConvZ2, P4V2ConvP4V2, P4H2V2ConvZ2, P4H2V2ConvP4H2V2, H2V2ConvZ2, H2V2ConvH2V2, H2ConvZ2, H2ConvH2, V2ConvZ2, V2ConvV2, Z2ConvZ2
 from groupy.gconv.pytorch_gconv.pooling import plane_group_spatial_max_pooling
 
+input_size = 10 #12 by default
+hidden_sizes = [400, 400, 400]
+output_size = input_size
+n_actions = output_size
+
+#=====================================================================Q-Network=========================================================================================================
+
+class QNet(nn.Module):
+    def __init__(self, input_size, hidden_sizes, num_classes):
+        super(QNet, self).__init__()                   # Inherited from the parent class nn.Module
+        self.fc1 = nn.Linear(input_size, hidden_sizes[0])  # 1st Full-Connected Layer: k (input data) -> 500 (hidden node)
+        self.relu = nn.ReLU()                          # Non-Linear ReLU Layer: max(0,x)
+        self.fc2 = nn.Linear(hidden_sizes[0], hidden_sizes[1])
+        self.fc3 = nn.Linear(hidden_sizes[1], hidden_sizes[2]) # 2nd Full-Connected Layer: 500 (hidden node) -> k (output class)
+        self.fc4 = nn.Linear(hidden_sizes[2], num_classes)
+    
+    def forward(self, x):                              # Forward pass: stacking each layer together
+        x = x/10
+        out = self.relu(self.fc1(x))
+        out = self.relu(self.fc2(out))
+        out = self.relu(self.fc3(out))
+        out = self.fc4(out)
+        return out
+        
+#define the policy network and target network
+device = 'cuda'
+policy_net = QNet(input_size, hidden_sizes, output_size).to(device)
+target_net = QNet(input_size, hidden_sizes, output_size).to(device)
+
 #===================================================================== Dictionaries for dataloader and model selection =====================================================================================
 aug_dict = {
             0: transforms.RandomRotation((-30,30)),
@@ -56,6 +85,17 @@ garray2_dict = {
             '011': 'H2V2ConvH2V2',
             '001': 'H2ConvH2',
             '010': 'V2ConvV2'
+            }
+
+accuracy_dict = {
+            '000': 12,
+            '100': 20,
+            '101': 20,
+            '110': 20,
+            '111': 32,
+            '011': 12,
+            '001': 12,
+            '010': 12
             }
 
 gconv_dict = {
@@ -131,7 +171,7 @@ def cifar10_transform_array(aug_dict=aug_dict, aug_array=torch.zeros(6), seed=12
   transforms_array.append(transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)))
   return transforms_array
 
-def cifar10_trainloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, train_batch_size = 64, mini_trainsize = 4000, mini_train=True):
+def cifar10_trainloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, train_batch_size = 32, mini_trainsize = 4000, mini_train=True):
   torch.manual_seed(seed)
   transform = transforms.Compose(cifar10_transform_array(aug_dict=aug_dict, aug_array=aug_array, seed=12345))
   trainset = torchvision.datasets.CIFAR10(root='./data', train=True,
@@ -226,8 +266,9 @@ class Environment(object):
     print("Group Neural Architecture Search using Group Decomposition and Reinforcement Learning!")
     self.device = device
     self.k = state_size # k = g_size for fully connected and k = g_size + 4*h_size for convolutional neural networks
-    self.current_state = torch.zeros(state_size) # g_size represents the size of the array of groups for equivariance
-    self.next_state = torch.zeros(state_size)
+    self.base_state = torch.tensor([1]+[0]*9)
+    self.current_state = torch.tensor([0]*10) # g_size represents the size of the array of groups for equivariance
+    self.next_state = torch.tensor([0]*10)
     self.models_trained = 1 # 1 corresponds to the base case
     self.time = 0                                                    # Further, base_reward should be equal to zero.
     self.next_state_string = ''.join(str(e) for e in self.next_state)
@@ -239,7 +280,7 @@ class Environment(object):
     self.child_test_size = child_test_size
     self.child_batch_size = child_batch_size
     self.child_test_batch_size = child_test_batch_size
-    self.base_accuracy = self.get_state_accuracy(self.current_state)
+    self.base_accuracy = self.get_state_accuracy(self.base_state)
     self.base_reward = self.get_state_reward(self.base_accuracy, self.base_accuracy)
     current_state_string = ''.join(str(e) for e in self.current_state)
     self.visited_model_rewards = {current_state_string: self.base_reward} # Dictionary of models visited and their rewards. Models are saved in the form of a binary string of length g_size
@@ -275,7 +316,7 @@ class Environment(object):
       accuracy = self.visited_model_accuracies[self.next_state_string]
       reward = self.visited_model_rewards[self.next_state_string]
 
-    if self.time > 100:
+    if self.time > 50:
       done = True
     return accuracy, reward, new_models_trained, done
 
@@ -289,6 +330,7 @@ class Environment(object):
     state = [int(i) for i in state]
     torch.manual_seed(1)
     group_array = ''.join(str(e) for e in state[0:3])
+    return accuracy_dict[group_array] # Remove it after testing
     GConv1 = garray1_dict[group_array]
     GConv2 = garray2_dict[group_array]
     aug_array = state[3:9]
@@ -398,11 +440,20 @@ def plot_update(x_models_trained, y_accuracy):
   plt.pause(0.001)  #pause a bit so that plots are updated
   fig.savefig('GNAS_GCNN_CIFAR10.eps', format='eps', dpi=1000)
 
+def plot_steps_update(x_steps, y_accuracy_per_step):
+  fig = plt.figure()
+  plt.title('Deep Q-learning CIFAR10')
+  plt.xlabel('Steps')
+  plt.ylabel('Accuracy')
+  plt.plot(x_steps, y_accuracy_per_step, label="Accuray")
+  plt.pause(0.001)  #pause a bit so that plots are updated
+  fig.savefig('GNAS_GCNN_steps_CIFAR10.eps', format='eps', dpi=1000)
+
 def plot_overall(x_models_trained, y_accuracy):
   # average windowed plot
   # averaged epsilon plot
   window_size = 60 # window_size < 200
-  EPS_MODELS_TRAINED_LIST = [0,100,150,200,250,300,350,400,450,425,500,600]
+  EPS_MODELS_TRAINED_LIST = [0,50,100,150,200,225,250,275,300,325,350,375,400]
   EPS_LIST = [1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05,0.01]
 
   y_accuracy_window = [sum(y_accuracy[i:i+window_size])/window_size for i in range(len(y_accuracy)-window_size)]
@@ -511,6 +562,10 @@ def main():
             help='learning rate (default: 1e-3)')
   parser.add_argument('--child-gamma', type=float, default=0.7, metavar='M',
             help='Learning rate step gamma (default: 0.7)')
+  parser.add_argument('--Q-GAMMA', type=float, default=0.5, metavar='M',
+            help='Learning rate step gamma (default: 0.7)')
+  parser.add_argument('--Q-BATCH_SIZE', type=int, default=128, metavar='M',
+            help='Batch size for Q-learning (default: 256)')
   parser.add_argument('--no-cuda', action='store_true', default=False,
             help='disables CUDA training')
   parser.add_argument('--dry-run', action='store_true', default=False,
@@ -554,8 +609,6 @@ def main():
   n_actions = output_size
   memory = ReplayMemory(10000)
   #define the policy network and target network
-  policy_net = QNet(input_size, hidden_sizes, output_size).to(device)
-  target_net = QNet(input_size, hidden_sizes, output_size).to(device)
 
   target_net.load_state_dict(policy_net.state_dict())
   target_net.eval()
@@ -564,16 +617,19 @@ def main():
   memory = ReplayMemory(10000)
 
   #=======================================================================Setup for Q-learning=============================================================================
-  Q_BATCH_SIZE = 512
-  Q_GAMMA = 0.5 # Dependency on the future
+  Q_BATCH_SIZE = args.Q_BATCH_SIZE
+  Q_GAMMA = args.Q_GAMMA # Dependency on the future
   Q_EPS_LIST = [1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05,0.01]
   Q_EPS_INDEX = 0
   Q_EPS = Q_EPS_LIST[Q_EPS_INDEX]
-  Q_MODELS_TRAINED_LIST = [100,150,200,250,300,350,400,450,425,500,600]
+  Q_MODELS_TRAINED_LIST = [50,100,150,200,225,250,275,300,325,350,375,400]
   Q_TARGET_UPDATE = 2
   env = Environment(device=device, child_network_dimensions=child_network_dimensions, child_train_size=args.child_train_size, child_test_size=args.child_test_size, child_batch_size=args.child_batch_size, child_test_batch_size=args.child_test_batch_size, child_lr=args.child_lr, child_epochs=args.child_epochs, state_size=args.state_size)
   y_accuracy = [env.base_accuracy] # Compute the rolling mean accuracy and average per epsilon accuracy from here
   x_models_trained = [env.models_trained] # Should be an enumeration from 1,...,total models to be trained.
+  y_accuracy_per_step = []
+  steps = 0
+  x_steps = []
   steps_per_model_list = []
   average_model_accuracy = env.base_accuracy
   steps_per_model = 1 # Considering the base accuracies and steps
@@ -587,10 +643,14 @@ def main():
     accuracy, reward, new_models_trained, done = env.step(action) # done = True when 1 episode completes, new_models_trained = True only when a new model has been trained in the step
     reward = torch.tensor([reward], device=device)
     next_state = torch.tensor([env.next_state[i] for i in range(env.k)])
+    memory.push(state, action, next_state, reward)
 
     steps_per_model += 1
     average_model_accuracy = (average_model_accuracy*(steps_per_model-1) + accuracy)/steps_per_model
 
+    steps += 1
+    y_accuracy_per_step.append(accuracy)
+    x_steps.append(steps)
     #================================================Perform one step of the optimization (on the target network)===========================================================
     optimize_model(env.k, device, memory, q_optimizer, Q_BATCH_SIZE, Q_GAMMA)
     #=======================Check if new models are trained===========================================
@@ -627,6 +687,7 @@ def main():
   np.save("model_accuracies_CIFAR10",env.visited_model_accuracies)
   np.save("model_rewards_CIFAR10",env.visited_model_rewards)
   torch.save(policy_net.state_dict(), "CIFAR10_DQN")
+  plot_steps_update(x_steps, y_accuracy_per_step)
   print('Complete')
 
 
