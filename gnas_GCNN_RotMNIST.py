@@ -254,7 +254,7 @@ class GNet(nn.Module):
         x = self.fc3(self.fc2(x))
         return F.log_softmax(x)
 #===================================================================== Train and test for child network ============================================================================
-def train(net, trainloader, criterion, optimizer, epoch, num_epochs=20, use_cuda=True):
+def train(net, device, trainloader, criterion, optimizer, epoch, num_epochs=20, use_cuda=True):
   
   for i, data in enumerate(trainloader, 0):   # Load a batch of images with its (index, data, class)
       inputs, labels = data
@@ -270,7 +270,7 @@ def train(net, trainloader, criterion, optimizer, epoch, num_epochs=20, use_cuda
               #%(epoch+1, num_epochs, i+1, (train_size/batch_size), loss.item()))
   return net
 
-def test(net, testloader, use_cuda=True):         
+def test(net, device, testloader, use_cuda=True):         
   correct = 0
   total = 0
 
