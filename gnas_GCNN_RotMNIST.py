@@ -29,8 +29,8 @@ input_size = 10 #10 by default
 hidden_sizes = [400, 400, 400]
 output_size = input_size
 n_actions = output_size
-RotMNIST_traindata = np.loadtxt('./data/mnist_all_rotation_normalized_float_test.amat')
-RotMNIST_testdata = np.loadtxt('./data/mnist_all_rotation_normalized_float_train_valid.amat')
+RotMNIST_traindata = np.loadtxt('/content/drive/MyDrive/Colab Notebooks/Group convolution neural networks/Datasets/RotMNIST/mnist_all_rotation_normalized_float_test.amat')
+RotMNIST_testdata = np.loadtxt('/content/drive/MyDrive/Colab Notebooks/Group convolution neural networks/Datasets/RotMNIST/mnist_all_rotation_normalized_float_train_valid.amat')
 
 class RotMNIST(Dataset):
     """Face Landmarks dataset."""
