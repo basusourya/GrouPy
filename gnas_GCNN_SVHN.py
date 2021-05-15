@@ -576,8 +576,8 @@ def main():
   memory = ReplayMemory(10000)
 
   #=======================================================================Setup for Q-learning=============================================================================
-  Q_BATCH_SIZE = 128
-  Q_GAMMA = 0.5 # Dependency on the future
+  Q_BATCH_SIZE = args.Q_BATCH_SIZE
+  Q_GAMMA = args.Q_GAMMA # Dependency on the future
   Q_EPS_LIST = [1.0,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1,0.05,0.01,0.01]
   Q_EPS_INDEX = 0
   Q_EPS = Q_EPS_LIST[Q_EPS_INDEX]
