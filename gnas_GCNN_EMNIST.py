@@ -29,37 +29,6 @@ input_size = 10 #10 by default
 hidden_sizes = [400, 400, 400]
 output_size = input_size
 n_actions = output_size
-RotMNIST_traindata = np.loadtxt('/content/data/mnist_all_rotation_normalized_float_test.amat')
-RotMNIST_testdata = np.loadtxt('/content/data/mnist_all_rotation_normalized_float_train_valid.amat')
-
-class RotMNIST(Dataset):
-    """Face Landmarks dataset."""
-
-    def __init__(self, traindata=RotMNIST_traindata, testdata=RotMNIST_testdata, train=True, transform=None):
-        self.traindata=traindata
-        self.testdata=testdata
-        self.train = train
-        self.transform = transform
-
-    def __len__(self):
-        length = len(self.traindata)
-        if self.train != True:
-          length = len(self.testdata)
-        return length
-
-    def __getitem__(self, idx):
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
-
-        image = self.traindata[idx,0:784].reshape(1,28,28)
-        label = self.traindata[idx, 784]
-        if self.train != True:
-          image = self.testdata[idx,0:784].reshape(1,28,28)
-          label = self.testdata[idx, 784]
-
-        if self.transform:
-            image = self.transform(torch.from_numpy(image)) # transforms.ToPILImage()
-        return (image, label)
 
 #=====================================================================Q-Network=========================================================================================================
 
@@ -192,32 +161,32 @@ net_size_dict = {
             0: 1  # 0 = small
             }
 #===================================================================== Dataloaders =================================================================================================
-def rotmnist_transform_array(aug_dict=aug_dict, aug_array=torch.zeros(6), seed=12345):
+def emnist_transform_array(aug_dict=aug_dict, aug_array=torch.zeros(6), seed=12345):
   # Outputs the array of transformations from aug_array
   torch.manual_seed(seed)
   transforms_array = []
   for i in range(len(aug_array)):
     if aug_array[i] > 0:
       transforms_array.append(aug_dict[i])
-  transforms_array.append(transforms.ToPILImage())
   transforms_array.append(transforms.ToTensor())
   transforms_array.append(transforms.Normalize((0.5,), (0.5,)))
   return transforms_array
 
-def rotmnist_trainloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, train_batch_size = 64, mini_trainsize = 4000, mini_train=True):
+def emnist_trainloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, train_batch_size = 64, mini_trainsize = 4000, mini_train=True):
   torch.manual_seed(seed)
-  transform = transforms.Compose(rotmnist_transform_array(aug_dict=aug_dict, aug_array=aug_array, seed=seed))
-  trainset = RotMNIST(traindata=RotMNIST_traindata, testdata=RotMNIST_testdata, train=True, transform=transform)
+  transform = transforms.Compose(emnist_transform_array(aug_dict=aug_dict, aug_array=aug_array, seed=seed))
+  trainset = torchvision.datasets.EMNIST(root='./data', split='letters', train=True,
+                                        download=True, transform=transform)
   trainloader = torch.utils.data.DataLoader(trainset, batch_size=train_batch_size, shuffle=True, num_workers=2)
   if mini_train == True:
     trainset_mini, _= torch.utils.data.random_split(trainset, [mini_trainsize, len(trainset) - mini_trainsize])
     trainloader = torch.utils.data.DataLoader(trainset_mini, batch_size=train_batch_size, shuffle=True, num_workers=2)
   return trainloader
 
-def rotmnist_testloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, test_batch_size = 1000, mini_testsize = 1000, mini_test=True):
+def emnist_testloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, test_batch_size = 1000, mini_testsize = 1000, mini_test=True):
   torch.manual_seed(seed)
-  testtransform = transforms.Compose(rotmnist_transform_array(aug_dict=aug_dict, seed=seed))
-  testset = RotMNIST(traindata=RotMNIST_traindata, testdata=RotMNIST_testdata, train=False, transform=testtransform)
+  testtransform = transforms.Compose(emnist_transform_array(aug_dict=aug_dict, seed=seed))
+  testset = torchvision.datasets.EMNIST(root='./data', split='letters', train=False, download=True, transform=testtransform)
   testloader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=True, num_workers=2)
   if mini_test == True:
     testset_mini, _= torch.utils.data.random_split(testset, [mini_testsize, len(testset) - mini_testsize])
@@ -239,7 +208,7 @@ class GNet(nn.Module):
         self.conv4 = gconv_dict[GConv2](channels, channels, kernel_size=3)
         self.fc1 = nn.Linear(4*4*channels*splitgroup_size, dense_neurons)
         self.fc2 = nn.Linear(dense_neurons, 50)
-        self.fc3 = nn.Linear(50, 10)
+        self.fc3 = nn.Linear(50, 26)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -258,6 +227,7 @@ def train(net, trainloader, criterion, optimizer, epoch, num_epochs=20, use_cuda
   
   for i, data in enumerate(trainloader, 0):   # Load a batch of images with its (index, data, class)
       inputs, labels = data
+      labels = labels - 1
       inputs, labels = inputs.to(device='cuda', dtype=torch.float), labels.to(device='cuda',dtype=torch.long)
       optimizer.zero_grad()                             # Intialize the hidden weight to all zeros
       outputs = net(inputs)                             # Forward pass: compute the output class given a image
@@ -277,6 +247,7 @@ def test(net, testloader, use_cuda=True):
   net.eval()
   for i, data in enumerate(testloader, 0):
       inputs, labels = data
+      labels = labels - 1
       inputs, labels = inputs.to(device='cuda', dtype=torch.float), labels.to(device='cuda',dtype=torch.long)
 
       outputs = net(inputs)
@@ -370,8 +341,8 @@ class Environment(object):
     #print("No. of parameters:", sum(p.numel() for p in model.parameters() if p.requires_grad))
     child_criterion = nn.CrossEntropyLoss()
     child_optimizer = optim.SGD(child_model.parameters(), lr=self.child_lr, momentum=0.9)
-    trainloader = rotmnist_trainloader(aug_dict=aug_dict, aug_array=train_aug_array, seed=12345, train_batch_size = self.child_batch_size, mini_trainsize = self.child_train_size, mini_train=True)
-    testloader = rotmnist_testloader(aug_dict=aug_dict, aug_array=test_aug_array, seed=12345, test_batch_size = self.child_test_batch_size, mini_testsize = self.child_test_size, mini_test=True)
+    trainloader = emnist_trainloader(aug_dict=aug_dict, aug_array=train_aug_array, seed=12345, train_batch_size = self.child_batch_size, mini_trainsize = self.child_train_size, mini_train=True)
+    testloader = emnist_testloader(aug_dict=aug_dict, aug_array=test_aug_array, seed=12345, test_batch_size = self.child_test_batch_size, mini_testsize = self.child_test_size, mini_test=True)
     testaccuracy = 0
     for epoch in range(self.child_epochs):
       #start_time = time.time()
@@ -461,21 +432,21 @@ def select_action(state, EPS, device, n_actions, policy_net):
 
 def plot_update(x_models_trained, y_accuracy):
   fig = plt.figure()
-  plt.title('Deep Q-learning RotMNIST')
+  plt.title('Deep Q-learning EMNIST')
   plt.xlabel('Models trained')
   plt.ylabel('Accuracy')
   plt.plot(x_models_trained, y_accuracy, label="Accuray")
   plt.pause(0.001)  #pause a bit so that plots are updated
-  fig.savefig('GNAS_GCNN_RotMNIST.eps', format='eps', dpi=1000)
+  fig.savefig('GNAS_GCNN_EMNIST.eps', format='eps', dpi=1000)
 
 def plot_steps_update(x_steps, y_accuracy_per_step):
   fig = plt.figure()
-  plt.title('Deep Q-learning RotMNIST')
+  plt.title('Deep Q-learning EMNIST')
   plt.xlabel('Steps')
   plt.ylabel('Accuracy')
   plt.plot(x_steps, y_accuracy_per_step, label="Accuray")
   plt.pause(0.001)  #pause a bit so that plots are updated
-  fig.savefig('GNAS_GCNN_steps_RotMNIST.eps', format='eps', dpi=1000)
+  fig.savefig('GNAS_GCNN_steps_EMNIST.eps', format='eps', dpi=1000)
 
 def plot_overall(x_models_trained, y_accuracy):
   # average windowed plot
@@ -496,7 +467,7 @@ def plot_overall(x_models_trained, y_accuracy):
 
   y_epsilon_accuracy = y_epsilon_accuracy[window_size:len(x_models_trained)]
   fig = plt.figure()
-  plt.title('Deep Q-learning RotMNIST')
+  plt.title('Deep Q-learning EMNIST')
   plt.xlabel('Models trained')
   plt.ylabel('Accuracy')
   plt.plot(x_models_trained_window, y_accuracy_window, label="Rolling mean Accuray")
@@ -575,7 +546,7 @@ def optimize_model(k, device, memory, q_optimizer, Q_BATCH_SIZE, Q_GAMMA):
 def main():
   # Training settings
   # For multiple augmentations set the flag --multiple-augmentations to true
-  parser = argparse.ArgumentParser(description='Deep Q-learning RotMNIST')
+  parser = argparse.ArgumentParser(description='Deep Q-learning EMNIST')
   parser.add_argument('--child-batch-size', type=int, default=32, metavar='N',
             help='input batch size for training (default: 32)')
   parser.add_argument('--child-test-batch-size', type=int, default=1000, metavar='N',
@@ -704,17 +675,17 @@ def main():
     # Update the target network, copying all weights and biases in DQN
     if env.models_trained % Q_TARGET_UPDATE == 0:
       target_net.load_state_dict(policy_net.state_dict())
-      torch.save(target_net.state_dict(), "Target_Net_RotMNIST_DQN")
+      torch.save(target_net.state_dict(), "Target_Net_EMNIST_DQN")
 
   #plot_overall(x_models_trained, y_accuracy, args.aug_array_id)
 
   # Save network and plot data
-  np.save("y_accuracy_RotMNIST",y_accuracy)
-  np.save("x_models_RotMNIST",x_models_trained)
-  np.save("steps_per_model_RotMNIST",steps_per_model_list)
-  np.save("model_accuracies_RotMNIST",env.visited_model_accuracies)
-  np.save("model_rewards_RotMNIST",env.visited_model_rewards)
-  torch.save(policy_net.state_dict(), "RotMNIST_DQN")
+  np.save("y_accuracy_EMNIST",y_accuracy)
+  np.save("x_models_EMNIST",x_models_trained)
+  np.save("steps_per_model_EMNIST",steps_per_model_list)
+  np.save("model_accuracies_EMNIST",env.visited_model_accuracies)
+  np.save("model_rewards_EMNIST",env.visited_model_rewards)
+  torch.save(policy_net.state_dict(), "EMNIST_DQN")
   plot_steps_update(x_steps, y_accuracy_per_step)
   print('Complete')
 
