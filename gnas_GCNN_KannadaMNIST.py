@@ -33,13 +33,15 @@ n_actions = output_size
 
 train_csv=pd.read_csv('/content/drive/MyDrive/Colab Notebooks/Group convolution neural networks/Datasets/Kannada-MNIST/train.csv')
 test_csv=pd.read_csv('/content/drive/MyDrive/Colab Notebooks/Group convolution neural networks/Datasets/Kannada-MNIST/test.csv')
+train_csv_values=train_csv.values
+test_csv_values=test_csv.values
 #=====================================================================Dataset=========================================================================================================
 class KannadaMNIST(Dataset):
-    """Sign language MNIST."""
+    """Kannada-MNIST."""
 
-    def __init__(self, train_csv=train_csv, test_csv=test_csv, train=True, transform=None):
-        self.traindata=train_csv
-        self.testdata=test_csv
+    def __init__(self, train_csv_values=train_csv_values, test_csv_values=test_csv_values, train=True, transform=None):
+        self.traindata=train_csv_values
+        self.testdata=test_csv_values
         self.train = train
         self.transform = transform
 
@@ -53,11 +55,11 @@ class KannadaMNIST(Dataset):
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
-        image = np.array(self.traindata.iloc[idx,1:785]).reshape(1,28,28)
-        label = self.traindata.iloc[idx, 0]
+        image = np.array(self.traindata[idx,1:785]).reshape(1,28,28)
+        label = self.traindata[idx, 0]
         if self.train != True:
-          image = np.array(self.testdata.iloc[idx,1:785]).reshape(1,28,28)
-          label = self.testdata.iloc[idx, 0]
+          image = np.array(self.testdata[idx,1:785]).reshape(1,28,28)
+          label = self.testdata[idx, 0]
 
         if self.transform:
             image = self.transform(torch.from_numpy(image).to(dtype=torch.float)) # transforms.ToPILImage()
@@ -208,7 +210,7 @@ def KannadaMNIST_transform_array(aug_dict=aug_dict, aug_array=torch.zeros(6), se
 def KannadaMNIST_trainloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, train_batch_size = 64, mini_trainsize = 4000, mini_train=True):
   torch.manual_seed(seed)
   transform = transforms.Compose(KannadaMNIST_transform_array(aug_dict=aug_dict, aug_array=aug_array, seed=seed))
-  trainset = KannadaMNIST(train_csv=train_csv, test_csv=test_csv, train=True, transform=transform)
+  trainset = KannadaMNIST(train_csv_values=train_csv_values, test_csv_values=test_csv_values, train=True, transform=transform)
   trainloader = torch.utils.data.DataLoader(trainset, batch_size=train_batch_size, shuffle=True, num_workers=2)
   if mini_train == True:
     trainset_mini, _= torch.utils.data.random_split(trainset, [mini_trainsize, len(trainset) - mini_trainsize])
@@ -218,7 +220,7 @@ def KannadaMNIST_trainloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345,
 def KannadaMNIST_testloader(aug_dict=aug_dict, aug_array=aug_array, seed=12345, test_batch_size = 1000, mini_testsize = 1000, mini_test=True):
   torch.manual_seed(seed)
   testtransform = transforms.Compose(KannadaMNIST_transform_array(aug_dict=aug_dict, seed=seed))
-  testset = KannadaMNIST(train_csv=train_csv, test_csv=test_csv, train=False, transform=testtransform)
+  testset = KannadaMNIST(train_csv_values=train_csv_values, test_csv_values=test_csv_values, train=False, transform=testtransform)
   testloader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=True, num_workers=2)
   if mini_test == True:
     testset_mini, _= torch.utils.data.random_split(testset, [mini_testsize, len(testset) - mini_testsize])
