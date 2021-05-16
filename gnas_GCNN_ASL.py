@@ -6,6 +6,7 @@ import time
 import math
 import random
 import numpy as np
+import panda as pd
 import matplotlib
 import matplotlib.pyplot as plt
 from collections import namedtuple
