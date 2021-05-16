@@ -226,7 +226,6 @@ def train(net, device, trainloader, criterion, optimizer, epoch, num_epochs=20, 
   
   for i, data in enumerate(trainloader, 0):   # Load a batch of images with its (index, data, class)
       inputs, labels = data
-      labels = labels - 1
       inputs, labels = inputs.to(device='cuda', dtype=torch.float), labels.to(device='cuda',dtype=torch.long)
       optimizer.zero_grad()                             # Intialize the hidden weight to all zeros
       outputs = net(inputs)                             # Forward pass: compute the output class given a image
@@ -246,7 +245,6 @@ def test(net, device, testloader, use_cuda=True):
   net.eval()
   for i, data in enumerate(testloader, 0):
       inputs, labels = data
-      labels = labels - 1
       inputs, labels = inputs.to(device='cuda', dtype=torch.float), labels.to(device='cuda',dtype=torch.long)
 
       outputs = net(inputs)
